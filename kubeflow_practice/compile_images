@@ -1,0 +1,14 @@
+SOURCE-IMAGE=load_data
+LOCATION=us
+PROJECT-ID=steady-cat-331605
+REPOSITORY=gcr.io
+IMAGE=load_data
+
+#link local docker image to revised image name as per GCP specifications
+docker tag $(SOURCE-IMAGE) $(LOCATION)-docker.pkg.dev/$(PROJECT-ID)/$(REPOSITORY)/$(IMAGE) 
+
+#docker push to google cloud artifact registry
+docker push $(LOCATION)-docker.pkg.dev/$(PROJECT-ID)/$(REPOSITORY)/$(IMAGE)
+
+#docker run syntax
+#docker run -v local_dir:/mounted_dir load_data --data_path=mounted_dir/data/train_MpHjUjU.csv
