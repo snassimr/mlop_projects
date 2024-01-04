@@ -15,7 +15,8 @@ RUN pip install -r /kubeflow_practice/requirements.txt
 #---------------STEP 2 Call the process---------------#
 ENTRYPOINT [ "python3","/kubeflow_practice/display_stats.py" ]
 
-#create image syntax
+#---------------STEP 3 Create image in Docker Registry or Google Artifact Registry---------------#
+
 #docker build -t display_stats -f Dockerfile_2 .
 #docker run syntax
 #docker run -v /local_dir:/mount_dir display_stats --data_path=/mount_dir/data/train_go05W65.csv

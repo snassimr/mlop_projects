@@ -40,7 +40,7 @@ def transform_data(data):
     print('Original column list ->',data.columns)
     #call simple data transform step
     data.rename(columns = {col:col.lower() for col in data.columns},inplace = True)
-    print('Transformed column list ->',data.columns
+    print('Transformed column list ->',data.columns)
     return None
 
 if __name__ == '__main__':

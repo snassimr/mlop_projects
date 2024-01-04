@@ -15,7 +15,8 @@ RUN pip install -r /kubeflow_practice/requirements.txt
 #---------------STEP 2 Call the process---------------#
 ENTRYPOINT [ "python3","/kubeflow_practice/read_data.py" ]
 
-#docker build syntax
+#---------------STEP 3 Create image in Docker Registry or Google Artifact Registry---------------#
+
 #docker build -t read_data -f Dockerfile .
 #docker run syntax
 #docker run -v local_dir:/mounted_dir read_data --data_path=mounted_dir/data/train_MpHjUjU.csv
