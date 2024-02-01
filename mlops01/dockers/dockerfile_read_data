@@ -1,0 +1,16 @@
+#---------------STEP 1 Environment Setup----------------#
+FROM google/cloud-sdk:latest
+
+RUN apt-get update 
+RUN apt-get install -y python3
+
+RUN mkdir /dockers
+COPY dockers/requirements.txt /dockers
+
+RUN mkdir /app
+COPY src /app/src
+
+RUN pip install -r /dockers/requirements.txt
+
+#---------------STEP 2 Call the process---------------#
+# ENTRYPOINT [ "python3","/mlops1/src/read_data.py" ]

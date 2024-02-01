@@ -1,0 +1,157 @@
+{
+  "components": {
+    "comp-display-stats": {
+      "executorLabel": "exec-display-stats",
+      "inputDefinitions": {
+        "artifacts": {
+          "input_dataset": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        }
+      }
+    },
+    "comp-read-data": {
+      "executorLabel": "exec-read-data",
+      "inputDefinitions": {
+        "parameters": {
+          "input_bucket_name": {
+            "parameterType": "STRING"
+          },
+          "input_file_name": {
+            "parameterType": "STRING"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "output_dataset": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        }
+      }
+    }
+  },
+  "defaultPipelineRoot": "gs://gcb_pipelines/kfp_pipeline_root/",
+  "deploymentSpec": {
+    "executors": {
+      "exec-display-stats": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "display_stats"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.6.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\n\ndef display_stats(\n   input_dataset: Input[Dataset], # Vertex AI Dataset\n):\n    import sys\n    sys.path.append('/app/src/ds')\n    from display_stats import display_stats\n\n    display_stats(\n        input_file_path = input_dataset.path\n        )\n\n"
+          ],
+          "image": "us-docker.pkg.dev/mlops-405823/repo1/image_display_stats"
+        }
+      },
+      "exec-read-data": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "read_data"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.6.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\n\ndef read_data(\n   input_bucket_name : str, \n   input_file_name : str,\n   output_dataset: OutputPath(\"Dataset\") # Vertex AI Dataset\n):\n    import sys\n    sys.path.append('/app/src/ds')\n    from read_data import read_data\n\n    read_data(\n        input_bucket_name, \n        input_file_name, \n        output_dataset\n        )\n\n"
+          ],
+          "image": "us-docker.pkg.dev/mlops-405823/repo1/image_read_data"
+        }
+      }
+    }
+  },
+  "pipelineInfo": {
+    "description": "Pipeline for read_data and display_stats",
+    "name": "kfp-pipeline"
+  },
+  "root": {
+    "dag": {
+      "tasks": {
+        "display-stats": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-display-stats"
+          },
+          "dependentTasks": [
+            "read-data"
+          ],
+          "inputs": {
+            "artifacts": {
+              "input_dataset": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "output_dataset",
+                  "producerTask": "read-data"
+                }
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "display-stats"
+          }
+        },
+        "read-data": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-read-data"
+          },
+          "inputs": {
+            "parameters": {
+              "input_bucket_name": {
+                "componentInputParameter": "input_bucket_name"
+              },
+              "input_file_name": {
+                "componentInputParameter": "input_file_name"
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "read-data"
+          }
+        }
+      }
+    },
+    "inputDefinitions": {
+      "parameters": {
+        "input_bucket_name": {
+          "parameterType": "STRING"
+        },
+        "input_file_name": {
+          "parameterType": "STRING"
+        },
+        "project": {
+          "defaultValue": "mlops-405823",
+          "isOptional": true,
+          "parameterType": "STRING"
+        }
+      }
+    }
+  },
+  "schemaVersion": "2.1.0",
+  "sdkVersion": "kfp-2.6.0"
+}
